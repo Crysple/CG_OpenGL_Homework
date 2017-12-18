@@ -34,7 +34,7 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, -1.5f, 5.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 5.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -82,14 +82,13 @@ int main()
     // build and compile shaders
     // -------------------------
     Shader ourShader("shader/1.model_loading.vs", "shader/1.model_loading.fs");
-    
     // load models
     // -----------
     //Model ourModel("group.obj","container.jpg");
-    //Model ourModel("resources/humanoid/humanoid.obj","resources/humanoid/container.jpg");
-    //Model ourModel("resources/paperMan/paperMan.obj","resources/paperMan/papyrus.jpg");
-    //Model ourModel("resources/snowMan/snowMan.obj","resources/snowMan/pitissue.jpeg");
-    Model ourModel("resources/cola/cola.obj","resources/cola/seal.bmp");
+    Model humanoid("resources/humanoid/humanoid.obj","resources/humanoid/container.jpg");
+    Model paperMan("resources/paperMan/paperMan.obj","resources/paperMan/papyrus.jpg");
+    Model snowMan("resources/snowMan/snowMan.obj","resources/snowMan/pitissue.jpeg");
+    Model desk("resources/desk/yj.obj","resources/desk/yj.jpg");
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     
@@ -120,13 +119,35 @@ int main()
         glm::mat4 view = camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
-        
-        // render the loaded model
-        glm::mat4 model;
-        model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));	// it's a bit too big for our scene, so scale it down
+        auto changeModel = [](glm::mat4 model,float t1,float t2,float t3,float s=1,float angle=0,float r1=0,float r2=0,float r3=0)->glm::mat4{
+            //glm::mat4 model;
+            model = glm::scale(model, glm::vec3(s,s,s));
+            if(angle>(1e-6))
+                model = glm::rotate(model, glm::radians(angle),glm::vec3(r1, r2, r3));
+            model = glm::translate(model, glm::vec3(t1, t2, t3));
+            return model;
+        };
+        glm::mat4 ori_model;
+        // render paperMan
+        glm::mat4 model = changeModel(ori_model,0,0,0,0.05f);
         ourShader.setMat4("model", model);
-        ourModel.Draw(ourShader);
+        paperMan.Draw(ourShader);
+        // render humanoid
+        model = changeModel(ori_model,0,0,0,0.2,90,0,0,1);
+        model = changeModel(model,-4,-11,-7,1,90.0f,0,1,0);
+        ourShader.setMat4("model", model);
+        humanoid.Draw(ourShader);
+        // render snowMan
+        model = changeModel(ori_model,15,-26,-10,0.02f);
+        ourShader.setMat4("model", model);
+        snowMan.Draw(ourShader);
+        //render desk
+        model = changeModel(ori_model,0,0,0,1,180.0f,0,1,0);
+        model = changeModel(model,130,20,-40,0.02f,270.0f,1,0,0);
+        ourShader.setMat4("model", model);
+        desk.Draw(ourShader);
+        
+        
         //testModel.Draw(ourShader);
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
